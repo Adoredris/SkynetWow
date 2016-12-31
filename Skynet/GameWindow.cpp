@@ -162,7 +162,8 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 		key == 0 || key == 0xFF) {
 	}
 	else {
-		
+		std::cout << lCtrl << rCtrl << lShift << rShift << lAlt << rAlt << std::endl;
+
 		PostMessage(hwnd, WM_KEYUP, 0xA2, 0);	// left control
 		PostMessage(hwnd, WM_KEYUP, 0xA3, 0);	// right control
 		PostMessage(hwnd, WM_KEYUP, 0xA0, 0);	// left shift
@@ -220,6 +221,7 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 			}
 		}
 		else {
+			//std::cout << key << std::endl;
 			PostMessage(hwnd, WM_KEYDOWN, key, 0);
 		}
 
@@ -268,8 +270,8 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 	}
 };
 
-void GameWindow::DoRedKeyPress(int key, bool rShift, bool rAlt) {
-	DoBlueKeyPress(key, false, true, false, rShift, false, rAlt);
+void GameWindow::DoRedKeyPress(int key, bool rCtrl, bool rShift) {
+	DoBlueKeyPress(key, false, rCtrl, false, rShift, false, true);
 
 };
 
@@ -278,19 +280,20 @@ void GameWindow::ParsePixelAndSend(COLORREF pixel) {
 	int Blue = (int)GetBValue(pixel);
 	int green = (int)GetGValue(pixel);
 
-	bool RedShift = ((green & 0x80) > 0);
-	bool RedAlt = ((green & 0x40) > 0);
-
-	bool LCtrl = ((green & 0x20) > 0);	// hex of 10000000
-	bool LShift = ((green & 0x10) > 0);	// hex of 01000000
-	bool LAlt = ((green & 0x8) > 0);// hex of 00100000
-	bool RCtrl = ((green & 0x4) > 0);// hex of 00010000
-	bool RShift = ((green & 0x2) > 0);// hex of 00001000
-	bool RAlt = ((green & 0x1) > 0);// hex of 00000100
+	
 
 
+	// it's in this order because wow requires modifiers to be "alt-ctrl-shift"
+	bool LAlt = ((green & 0x1) > 0);		// hex of 00000001
+	bool RAlt = ((green & 0x2) > 0);		// hex of 00000010
+	bool LCtrl = ((green & 0x4) > 0);		// hex of 00000100
+	bool RCtrl = ((green & 0x8) > 0);		// hex of 00001000
+	bool LShift = ((green & 0x10) > 0);		// hex of 00010000
+	bool RShift = ((green & 0x20) > 0);		// hex of 00100000
+	bool RedCtrl = ((green & 0x40) > 0);	// hex of 01000000
+	bool RedShift = ((green & 0x80) > 0);	// hex of 10000000
 
 									 // verifies and reassigns at the same time
-	DoRedKeyPress(Red, RedShift, RedAlt);
+	DoRedKeyPress(Red, RedCtrl, RedShift);		// this uses right modifiers and actually sends them with alt always down
 	DoBlueKeyPress(Blue, LCtrl, RCtrl, LShift, RShift, LAlt, RAlt);
 };
