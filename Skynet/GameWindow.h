@@ -16,6 +16,10 @@ public:
 	GameWindow(HWND _hwnd) {
 		hwnd = _hwnd;
 
+		windows7 = !IsWindows8OrGreater();
+		
+
+
 		nextScanTime = std::chrono::system_clock::now();
 	};
 
@@ -29,6 +33,8 @@ private:
 	void PixelProcess();
 
 	COLORREF GetColorRef();
+	COLORREF GetColorRefWin7();
+	COLORREF GetColorRefWin10();		// otherwise known as other
 
 	std::chrono::time_point<std::chrono::system_clock> nextScanTime;
 
@@ -51,5 +57,7 @@ private:
 	//static std::chrono::milliseconds delayBetweenClicks;
 	static int delayBetweenClicks;
 	static std::chrono::milliseconds delayAfterNoSpell;
+
+	static int windows7;
 
 };

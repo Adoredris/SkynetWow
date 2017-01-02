@@ -58,8 +58,8 @@ public:
 
 			ScanWindowsFrequencySeconds = reader.GetReal("Scanning", "ScanWindowsFrequencySeconds", 10.0);
 
-			x = reader.GetInteger("Coordinates", "x", 1);
-			y = reader.GetInteger("Coordinates", "y", 1);
+			x = reader.GetInteger("Coordinates", "x", 10);
+			y = reader.GetInteger("Coordinates", "y", 30);
 
 			MemoryReadingEnabled = reader.GetBoolean("Memory", "Enabled", false);
 		}

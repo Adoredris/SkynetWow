@@ -156,6 +156,8 @@
   <ItemGroup>
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="GameWindowReadWin10.cpp" />
+    <ClCompile Include="GameWindowReadWin7.cpp" />
     <ClCompile Include="ini.cpp" />
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="Settings.cpp" />
