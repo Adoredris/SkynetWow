@@ -6,7 +6,8 @@ std::chrono::milliseconds GameWindow::delayAfterSpell = std::chrono::millisecond
 std::chrono::milliseconds GameWindow::offDelay = std::chrono::milliseconds(1000);
 std::chrono::milliseconds GameWindow::deadDelay = std::chrono::milliseconds(5000);
 //std::chrono::milliseconds GameWindow::delayBetweenClicks = std::chrono::milliseconds(50);
-int GameWindow::delayBetweenClicks = 50;
+int GameWindow::delayBetweenSameClicks = 100;
+int GameWindow::delayBetweenDiffClicks = 20;
 std::chrono::milliseconds GameWindow::delayAfterNoSpell = std::chrono::milliseconds(100);
 
 int GameWindow::windows7 = false;
@@ -55,6 +56,33 @@ void GameWindow::PixelProcess() {
 
 };
 
+void GameWindow::ParseDoubleAndSend(double val) {
+	int number = (int)val;
+
+	int Red = (number & 0xFF0000) >> 16;
+	int Blue = number & 0xFF;
+	int green = (number & 0xFF00) >> 8;
+
+
+
+
+	// it's in this order because wow requires modifiers to be "alt-ctrl-shift"
+	bool LAlt = ((green & 0x1) > 0);		// hex of 00000001
+	bool RAlt = ((green & 0x2) > 0);		// hex of 00000010
+	bool LCtrl = ((green & 0x4) > 0);		// hex of 00000100
+	bool RCtrl = ((green & 0x8) > 0);		// hex of 00001000
+	bool LShift = ((green & 0x10) > 0);		// hex of 00010000
+	bool RShift = ((green & 0x20) > 0);		// hex of 00100000
+	bool RedCtrl = ((green & 0x40) > 0);	// hex of 01000000
+	bool RedShift = ((green & 0x80) > 0);	// hex of 10000000
+
+											//std::cout << (int)pixel << std::endl;
+
+											// verifies and reassigns at the same time
+	DoRedKeyPress(Red, RedCtrl, RedShift);		// this uses right modifiers and actually sends them with alt always down
+	DoBlueKeyPress(Blue, LCtrl, RCtrl, LShift, RShift, LAlt, RAlt);
+};
+
 void GameWindow::DoProcessing() {
 	//std::cout << "doprocessing\n";
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
@@ -62,11 +90,13 @@ void GameWindow::DoProcessing() {
 		while (KeyStateFreezing::IsModifierDown()) {
 			Sleep(50);
 		}
+		//std::cout << "processing if not running\n";
 		if (!running) {
+			//std::cout << "joining pixelThread\n";
 			if (pixelThread.joinable()) {
 				pixelThread.join();
 			}
-			//std::cout << "thread started\n";
+			
 			running = true;
 			pixelThread = std::thread(std::mem_fn(&GameWindow::Run), this);
 
@@ -88,28 +118,49 @@ void GameWindow::DoProcessing() {
 
 void GameWindow::Run() {
 	bool ran = false;
-	COLORREF color = GetColorRef();
-	while (color != 0) {
+	double val = 0;
+	double newVal = GetDoubleValue();
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+	std::chrono::time_point<std::chrono::system_clock> sendTime = now - GameWindow::deadDelay;
+	while (newVal != 0) {
 		if (KeyStateFreezing::IsModifierDown()) {
 			ran = false;
-			std::cout << "skipping\n";
+			//std::cout << "skipping\n";
 			break;
 		}
 		ran = true;
-		if ((int)GetBValue(color) == 255) {
-			nextScanTime = std::chrono::system_clock::now() + offDelay;
-			running = false;
-			return;
-		}
+		//if ((int)GetBValue(color) == 255) {
+		//nextScanTime = std::chrono::system_clock::now() + offDelay;
+		//running = false;
+		//return;
+		//}
 		// there was a point to this I swear
 		//else if ((int)GetRValue(color) == 255) {
 		//	nextScanTime = std::chrono::system_clock::now() + deadDelay;
 		//	running = false;
 		//	return;
 		//}
-		ParsePixelAndSend(color);
-		Sleep(delayBetweenClicks);
-		color = GetColorRef();
+		if (val == newVal) {
+			//ParseDoubleAndSend(newVal);
+			//Sleep(delayBetweenSameClicks);
+			std::chrono::duration<double> timeDifference = (now - sendTime);
+			//std::cout << timeDifference.count() * 1000 << std::endl;
+			if (timeDifference.count() * 1000 > delayBetweenSameClicks) {
+				//std::cout << "sending slowly cause repeated\n";
+				ParseDoubleAndSend(newVal);
+				sendTime = now;
+			}
+		}
+		else
+		{
+			//std::cout << "sending quickly cause changed\n";
+			ParseDoubleAndSend(newVal);
+			sendTime = now;
+			val = newVal;
+		}
+		Sleep(delayBetweenDiffClicks);
+		newVal = GetDoubleValue();
+		now = std::chrono::system_clock::now();
 	}
 	if (ran) {
 		//std::cout << "not reading for a while\n";
@@ -131,7 +182,7 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 		key == 0 || key == 0xFF) {
 	}
 	else {
-		std::cout << lCtrl << rCtrl << lShift << rShift << lAlt << rAlt << std::endl;
+		//std::cout << lCtrl << rCtrl << lShift << rShift << lAlt << rAlt << std::endl;
 
 		PostMessage(hwnd, WM_KEYUP, 0xA2, 0);	// left control
 		PostMessage(hwnd, WM_KEYUP, 0xA3, 0);	// right control
@@ -179,11 +230,11 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 			// mouse buttons
 			//std::cout << "trying to send mouse button" << std::endl;
 			if (key == 5) {
-				std::cout << "trying to send mouse button X1" << std::endl;
+				//std::cout << "trying to send mouse button X1" << std::endl;
 				PostMessage(hwnd, WM_XBUTTONDOWN, MK_XBUTTON1 | 0x00010000, 0);
 			}
 			else if (key == 6) {
-				std::cout << "trying to send mouse button X2" << std::endl;
+				//std::cout << "trying to send mouse button X2" << std::endl;
 				PostMessage(hwnd, WM_XBUTTONDOWN, MK_XBUTTON2 | 0x00020000, 0);
 			}
 		}
@@ -237,15 +288,25 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 	}
 };
 
-COLORREF GameWindow::GetColorRef() {
+double GameWindow::GetDoubleValue() {
+	double value;
+	COLORREF color;
 	if (windows7) {
 		//std::cout << "using win7 mode\n";
-		return GetColorRefWin7();
+		color = GetColorRefWin7();
 	}
 	else {
 		//std::cout << "using win10 mode\n";
-		return GetColorRefWin10();
+		color = GetColorRefWin10();
 	}
+
+	int Red = (int)GetRValue(color);
+	int Blue = (int)GetBValue(color);
+	int Green = (int)GetGValue(color);
+	
+	value = Red * 65536 + Green * 256 + Blue;
+	//std::cout << "using pixel value: " << value << std::endl;
+	return value;
 };
 
 void GameWindow::DoRedKeyPress(int key, bool rCtrl, bool rShift) {
@@ -253,7 +314,7 @@ void GameWindow::DoRedKeyPress(int key, bool rCtrl, bool rShift) {
 
 };
 
-void GameWindow::ParsePixelAndSend(COLORREF pixel) {
+/*void GameWindow::ParsePixelAndSend(COLORREF pixel) {
 	int Red = (int)GetRValue(pixel);
 	int Blue = (int)GetBValue(pixel);
 	int green = (int)GetGValue(pixel);
@@ -271,9 +332,9 @@ void GameWindow::ParsePixelAndSend(COLORREF pixel) {
 	bool RedCtrl = ((green & 0x40) > 0);	// hex of 01000000
 	bool RedShift = ((green & 0x80) > 0);	// hex of 10000000
 
-	std::cout << (int)pixel << std::endl;
+	//std::cout << (int)pixel << std::endl;
 
 									 // verifies and reassigns at the same time
 	DoRedKeyPress(Red, RedCtrl, RedShift);		// this uses right modifiers and actually sends them with alt always down
 	DoBlueKeyPress(Blue, LCtrl, RCtrl, LShift, RShift, LAlt, RAlt);
-};
+};*/

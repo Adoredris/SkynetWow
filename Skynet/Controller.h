@@ -17,6 +17,7 @@ private:
 
 public:
 	Controller();
+	void Start();
 	void Stop();
 	void PauseResume();
 

@@ -8,17 +8,14 @@ Controller::Controller() {
 
 };
 
-
-
-
 // return true == next
 BOOL CALLBACK Controller::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 	Controller *pThis = reinterpret_cast<Controller *>(lParam);
-
 	CHAR windowClass[32];
 	std::string wowClass = std::string("GxWindowClass");
 	int classSize = GetClassNameA(hwnd, windowClass, 32);
 	if (std::string(windowClass).compare(wowClass) != 0) {
+		
 		return true;
 
 	}
@@ -29,6 +26,25 @@ BOOL CALLBACK Controller::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 			return true;
 		}
 	}
+
+	/*DWORD tempProcid = 0;
+	GetWindowThreadProcessId(hwnd, &tempProcid);
+	HANDLE pHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, tempProcid);
+	char Buffer[MAX_PATH];
+	GetModuleFileNameEx(pHandle, 0, Buffer, MAX_PATH);
+
+	std::cout << Buffer << std::endl;
+	std::string path = Buffer;
+	//std::cout << path << std::endl;
+	if (path.size() > 8 && path[path.size() - 6] == 'o' && (path[path.size() - 5] == 'w' || path[path.size() - 5] == 'W')) {
+		std::cout << "32 bit wow\nMemory reading might be viable.\n";
+
+	} else {
+		// 64 bit wow
+		CloseHandle(pHandle);
+		pHandle = 0;
+
+	}*/
 
 	// removed this crap cause false positives render it pointless anyway
 	/*if (!IsMultiPixelReadMatching(hwnd)) {
@@ -42,7 +58,7 @@ BOOL CALLBACK Controller::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 
 	//SetWindowText(hwnd, newTitle.c_str());
 
-	/*pThis->*/gamewindows.push_back(GameWindow(hwnd));
+	/*pThis->*/gamewindows.push_back(GameWindow(hwnd/*, pHandle*/));
 
 	//InjectDll();
 
@@ -68,6 +84,7 @@ void Controller::ValidateWindows() {
 }
 
 void Controller::Run() {
+	//std::cout << "run\n";
 	EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(this));
 	std::chrono::time_point<std::chrono::system_clock> lastScan = std::chrono::system_clock::now();
 	
@@ -75,6 +92,7 @@ void Controller::Run() {
 		int delay = Settings::ControllerRunDelay;		// idea of this variable being here is in the future it will lower the sleep duration by however long it to to perform EnumWindows, etc
 		if (!paused) {
 			for (list<GameWindow>::iterator windowIter = gamewindows.begin(); windowIter != gamewindows.end(); windowIter++) {
+				//std::cout << "processing window\n";
 				windowIter->DoProcessing();
 			}
 		}

@@ -1,0 +1,12 @@
+﻿  stdafx.cpp
+  Controller.cpp
+  GameWindow.cpp
+  GameWindowMemoryRead.cpp
+  GameWindowReadWin10.cpp
+  GameWindowReadWin7.cpp
+  ini.cpp
+  INIReader.cpp
+  Settings.cpp
+  Skynet.cpp
+  Generating Code...
+  Skynet.vcxproj -> D:\Users\Ikevink\Git\Skynet\Debug\Skynet2.exe

@@ -13,12 +13,21 @@ public:
 	//~GameWindow() {
 	//};
 
-	GameWindow(HWND _hwnd) {
+	GameWindow(HWND _hwnd, HANDLE handle = 0) {
 		hwnd = _hwnd;
-
+		running = false;
 		windows7 = !IsWindows8OrGreater();
-		
+		//std::cout << "win7: " << windows7 << std::endl;
 
+		//pHandle = handle;
+		//address = 0x40000000;
+
+		//if (pHandle != 0) {
+			//searchingThread = std::thread(std::mem_fn(&GameWindow::Scan), this);
+		//}
+
+		//searching = false;
+		//gotProbablyCorrect = false;
 
 		nextScanTime = std::chrono::system_clock::now();
 	};
@@ -32,15 +41,17 @@ private:
 	void Run();
 	void PixelProcess();
 
-	COLORREF GetColorRef();
+	double GetDoubleValue();
 	COLORREF GetColorRefWin7();
 	COLORREF GetColorRefWin10();		// otherwise known as other
+
 
 	std::chrono::time_point<std::chrono::system_clock> nextScanTime;
 
 	thread pixelThread;
 
-	void ParsePixelAndSend(COLORREF pixel);
+	//void ParsePixelAndSend(COLORREF pixel);
+	void ParseDoubleAndSend(double val);
 
 	void DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bool rShift, bool lAlt, bool rAlt);
 	void DoRedKeyPress(int key, bool rShift, bool rAlt);
@@ -55,7 +66,8 @@ private:
 	static std::chrono::milliseconds offDelay;
 	static std::chrono::milliseconds deadDelay;			// don't read for freaking ages
 	//static std::chrono::milliseconds delayBetweenClicks;
-	static int delayBetweenClicks;
+	static int delayBetweenSameClicks;
+	static int delayBetweenDiffClicks;
 	static std::chrono::milliseconds delayAfterNoSpell;
 
 	static int windows7;
