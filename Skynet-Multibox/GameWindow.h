@@ -43,7 +43,7 @@ private:
 
 	double GetDoubleValue();
 	COLORREF GetColorRefWin7();
-	COLORREF GetColorRefWin10();		// otherwise known as other
+	COLORREF GetColorRefWin10(bool right = false);		// otherwise known as other
 
 
 	std::chrono::time_point<std::chrono::system_clock> nextScanTime;

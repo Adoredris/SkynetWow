@@ -27,6 +27,10 @@ BOOL CALLBACK Controller::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 		}
 	}
 
+	//std::cout << std::hex << GetWindowLong(hwnd, GWL_STYLE) << std::endl;
+	//SetWindowLong(hwnd, GWL_STYLE, 0x94000000);
+	//std::cout << std::hex << GetWindowLong(hwnd, GWL_EXSTYLE) << std::endl;
+
 	/*DWORD tempProcid = 0;
 	GetWindowThreadProcessId(hwnd, &tempProcid);
 	HANDLE pHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, tempProcid);

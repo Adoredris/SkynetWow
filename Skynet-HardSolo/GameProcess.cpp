@@ -55,7 +55,9 @@ void GameProcess::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, b
 		key == VK_SNAPSHOT ||
 		key == VK_DELETE && lCtrl && lAlt ||
 		key == VK_F4 && (lAlt || rAlt) ||
-		key == 0 || key == 0xFF) {
+		key == 0 || key == 0xFF ||
+		key == VK_XBUTTON1 || key == VK_XBUTTON2)	// mouse 4/5 
+	{
 	}
 	else {
 		//std::cout << lCtrl << rCtrl << lShift << rShift << lAlt << rAlt << std::endl;

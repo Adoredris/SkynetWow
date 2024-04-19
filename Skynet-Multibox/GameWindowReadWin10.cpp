@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameWindow.h"
 
-COLORREF GameWindow::GetColorRefWin10() {
+COLORREF GameWindow::GetColorRefWin10(bool right) {
 	RECT rct;
 	GetWindowRect(hwnd, &rct);
 	COLORREF cColour = 0;
@@ -17,18 +17,27 @@ COLORREF GameWindow::GetColorRefWin10() {
 	}
 	WINDOWINFO wInfo;
 	GetWindowInfo(hwnd, &wInfo);
-	int x = rct.left + 1 + (wInfo.rcClient.left - wInfo.rcWindow.left);
-	int y = rct.top + 1 + (wInfo.rcClient.top - wInfo.rcWindow.top);
+	int x = right ? (rct.right - 1 + (wInfo.rcClient.right - wInfo.rcWindow.right)) : (rct.left + 0 + (wInfo.rcClient.left - wInfo.rcWindow.left));
+	/*int x = rct.left + 0 + (wInfo.rcClient.left - wInfo.rcWindow.left);
+	std::cout << "rct.left: " << rct.left << std::endl;
+	std::cout << "rcClient.left: " << wInfo.rcClient.left << std::endl;
+	std::cout << "rcWindow.left: " << wInfo.rcWindow.left << std::endl;
+	std::cout << "x: " << x << std::endl;*/
+
+	/*int x = rct.right - 1 + (wInfo.rcClient.right - wInfo.rcWindow.right);
+	std::cout << "rct.right: " << rct.right << std::endl;
+	std::cout << "rcClient.right: " << wInfo.rcClient.right << std::endl;
+	std::cout << "rcWindow.right: " << wInfo.rcWindow.right << std::endl;
+	std::cout << "x: " << x << std::endl;*/
+
+	int y = rct.top + 0 + (wInfo.rcClient.top - wInfo.rcWindow.top);
 	
 	//std::cout << GetForegroundWindow() << std::endl;
 	
-	if (GetForegroundWindow() != hwnd) {
+	/*if (GetForegroundWindow() != hwnd) {
 		HWND hwndNext = GetNextWindow(hwnd, GW_HWNDPREV);
 		//int i = 1;
 		while (hwndNext != 0) {
-
-			/*RECT nextrct;
-			GetWindowRect(hwndNext, &nextrct);*/
 			WINDOWINFO wNextInfo;
 			GetWindowInfo(hwndNext, &wNextInfo);
 			RECT nextrct = wNextInfo.rcWindow;
@@ -60,11 +69,6 @@ COLORREF GameWindow::GetColorRefWin10() {
 			}
 			
 
-			
-			
-			/*if (i < 10) {
-				std::cout << i << ": " << windowText << " - " << classSize << std::endl;
-			}*/
 			if (x > nextrct.left && x < nextrct.right &&
 				y > nextrct.top && y < nextrct.bottom) {
 				if (strcmp(windowText,"InputDirectorClipboardClientWin") == 0) {
@@ -83,7 +87,7 @@ COLORREF GameWindow::GetColorRefWin10() {
 			//i++;
 			hwndNext = GetNextWindow(hwndNext, GW_HWNDPREV);
 		}
-	}
+	}*/
 
 	//std::cout << "left: " << rct.left << ", right: " << rct.right << std::endl;
 	//if (rct.left < 0) { rct.left = 0; };

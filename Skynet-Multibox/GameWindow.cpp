@@ -73,13 +73,15 @@ void GameWindow::ParseDoubleAndSend(double val) {
 	bool RCtrl = ((green & 0x8) > 0);		// hex of 00001000
 	bool LShift = ((green & 0x10) > 0);		// hex of 00010000
 	bool RShift = ((green & 0x20) > 0);		// hex of 00100000
-	bool RedCtrl = ((green & 0x40) > 0);	// hex of 01000000
-	bool RedShift = ((green & 0x80) > 0);	// hex of 10000000
+	//bool RedCtrl = ((green & 0x40) > 0);	// hex of 01000000
+	//bool RedShift = ((green & 0x80) > 0);	// hex of 10000000
 
 											//std::cout << (int)pixel << std::endl;
 
+	
+
 											// verifies and reassigns at the same time
-	DoRedKeyPress(Red, RedCtrl, RedShift);		// this uses right modifiers and actually sends them with alt always down
+	//DoRedKeyPress(Red, RedCtrl, RedShift);		// this uses right modifiers and actually sends them with alt always down
 	DoBlueKeyPress(Blue, LCtrl, RCtrl, LShift, RShift, LAlt, RAlt);
 };
 
@@ -179,7 +181,9 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 		key == VK_SNAPSHOT ||
 		key == VK_DELETE && lCtrl && lAlt ||
 		key == VK_F4 && (lAlt || rAlt)  ||
-		key == 0 || key == 0xFF) {
+		key == 0 || key == 0xFF || 
+		key == VK_XBUTTON1 || key == VK_XBUTTON2)	// mouse 4/5
+	{
 	}
 	else {
 		//std::cout << lCtrl << rCtrl << lShift << rShift << lAlt << rAlt << std::endl;
@@ -289,22 +293,24 @@ void GameWindow::DoBlueKeyPress(int key, bool lCtrl, bool rCtrl, bool lShift, bo
 };
 
 double GameWindow::GetDoubleValue() {
-	double value;
+	double value = 0.0;
 	COLORREF color;
-	if (windows7) {
-		//std::cout << "using win7 mode\n";
-		color = GetColorRefWin7();
-	}
-	else {
-		//std::cout << "using win10 mode\n";
-		color = GetColorRefWin10();
+	int Red;
+
+	//std::cout << "using win10 mode\n";
+	color = GetColorRefWin10();
+	Red = (int)GetRValue(color);
+	if (Red != 137) {
+		color = GetColorRefWin10(true);
 	}
 
-	int Red = (int)GetRValue(color);
+	Red = (int)GetRValue(color);
 	int Blue = (int)GetBValue(color);
 	int Green = (int)GetGValue(color);
-	
-	value = Red * 65536 + Green * 256 + Blue;
+
+	if (Red == 137) {
+		value = Red * 65536 + Green * 256 + Blue;
+	}
 	//std::cout << "using pixel value: " << value << std::endl;
 	return value;
 };
